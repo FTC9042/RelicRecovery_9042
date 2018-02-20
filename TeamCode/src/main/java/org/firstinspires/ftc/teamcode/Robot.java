@@ -18,6 +18,10 @@ public class Robot {
     public boolean jewelup = true;
     HardwareMap map;
 
+    //Relic mech
+    DcMotor relic;
+    Servo arm, claw;
+
     public double oldLeftSpeed = 0, oldRightSpeed = 0, oldIntakeSpeedLeft = 0, oldIntakeSpeedRight = 0;
 
     public Robot(HardwareMap map) {
@@ -112,7 +116,7 @@ public class Robot {
         setDrivePower(0);
     }
 
-    private double rangeKeep(double x, double min, double max) {
+    public double rangeKeep(double x, double min, double max) {
         if (x < min) return min;
         else if (x > max) return max;
         return x;

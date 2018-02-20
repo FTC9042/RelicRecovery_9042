@@ -13,7 +13,6 @@ public class RobotMap {
     public static final float DRIVE_OFFSET = 400;
     public static final double P_CONSTANT_DRIVING = 0.01;
 
-
     public static final double circumference = Math.PI* WHEEL_DIAMETER;
 
     public static double INCREMENT = .05;
