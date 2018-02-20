@@ -158,6 +158,5 @@ public class BlueJewelGlyph extends LinearOpMode {
         while(opModeIsActive() && t.seconds() < 0.2){
             robot.setDrivePower(0.25);
         }
-
     }
 }
