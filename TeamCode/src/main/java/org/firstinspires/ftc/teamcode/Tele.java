@@ -70,22 +70,21 @@ public class Tele extends OpMode{
         }
 
         if(gamepad2.right_bumper){
-            robot.arm.setPosition(0.33);
+            robot.arm.setPosition(0.45);
         }
 
         if(gamepad2.left_bumper){
             robot.arm.setPosition(1);
         }
 
-        if(gamepad2.right_trigger > 0.5)
+        if(gamepad2.x)
             robot.relic.setPower(-1);
-        else if(gamepad2.left_trigger> 0.5)
+        else if(gamepad2.b)
             robot.relic.setPower(1);
         else
             robot.relic.setPower(0);
 
         robot.claw.setPosition(1-gamepad2.right_trigger);
-
 
     }
 
