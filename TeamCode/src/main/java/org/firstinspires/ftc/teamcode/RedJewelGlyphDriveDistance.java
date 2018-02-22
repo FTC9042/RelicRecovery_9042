@@ -19,8 +19,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.Velocity;
  * Created by anikaitsingh on 2/13/18.
  */
 
-@Autonomous(name = "Blue Jewel - Glyph", group = "Auton")
-public class BlueJewelGlyphDriveDistance extends LinearOpMode {
+@Autonomous(name = "Red Jewel - Glyph", group = "Auton")
+public class RedJewelGlyphDriveDistance extends LinearOpMode {
     Robot robot;
     ColorSensor sensorColor;
     double errorLeft, errorRight;
@@ -45,18 +45,12 @@ public class BlueJewelGlyphDriveDistance extends LinearOpMode {
         robot.intakeLeft = map.dcMotor.get("intakeLeft");
         robot.intakeRight = map.dcMotor.get("intakeRight");
 
-        robot.rightBack.setDirection(DcMotorSimple.Direction.FORWARD);
-        robot.rightFront.setDirection(DcMotorSimple.Direction.FORWARD);
-        robot.leftBack.setDirection(DcMotorSimple.Direction.REVERSE);
-        robot.leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
+        robot.rightBack.setDirection(DcMotorSimple.Direction.REVERSE);
+        robot.rightFront.setDirection(DcMotorSimple.Direction.REVERSE);
+        robot.leftBack.setDirection(DcMotorSimple.Direction.FORWARD);
+        robot.leftFront.setDirection(DcMotorSimple.Direction.FORWARD);
         robot.intakeLeft.setDirection(DcMotorSimple.Direction.REVERSE);
         robot.intakeRight.setDirection(DcMotorSimple.Direction.REVERSE);
-
-        robot.leftBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        robot.rightBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-
-        robot.setDriveMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.setDriveMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
     public void runOpMode(){
@@ -243,7 +237,7 @@ public class BlueJewelGlyphDriveDistance extends LinearOpMode {
 
         A.reset();
         while(opModeIsActive() && A.seconds() < 1)
-        robot.setDrivePower(1);
+            robot.setDrivePower(1);
 
     }
 }
