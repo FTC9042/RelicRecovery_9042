@@ -5,6 +5,7 @@ import android.graphics.Color;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -13,6 +14,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
+import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 import org.firstinspires.ftc.robotcore.external.navigation.Velocity;
 
 /**
@@ -30,6 +32,9 @@ public class BlueJewelGlyphDriveDistance extends LinearOpMode {
     //PID Objects
     PID pDrivingLeft = new PID(RobotMap.P_CONSTANT_DRIVING);
     PID pDrivingRight = new PID(RobotMap.P_CONSTANT_DRIVING);
+
+
+    RelicRecoveryVuMark position;
 
     private void initR() {
         robot = new Robot(this.hardwareMap);
@@ -57,6 +62,9 @@ public class BlueJewelGlyphDriveDistance extends LinearOpMode {
 
         robot.setDriveMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         robot.setDriveMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        hardwareMap.servo.get("holder").setPosition(1);
+
     }
 
     public void runOpMode(){
@@ -114,7 +122,7 @@ public class BlueJewelGlyphDriveDistance extends LinearOpMode {
         robot.setDriveMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         while (opModeIsActive()) {
             robot.setDrivePower(power);
-            if (time.time() > 1) {
+            if (time.time() > 0.5) {
                 break;
             }
             telemetry.addData("Detected", str);
@@ -125,27 +133,34 @@ public class BlueJewelGlyphDriveDistance extends LinearOpMode {
 
         robot.stop();
 
-        ElapsedTime x = new ElapsedTime();
-        x.startTime();
-        x.reset();
-        while(x.seconds()<2){
-
+        if(!red){
+            power = -.2;
         }
 
+        time.reset();
+        robot.setDriveMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        while (opModeIsActive()) {
+            robot.setDrivePower(power);
+            if (time.time() > 1.0) {
+                break;
+            }
+            telemetry.update();
+        }
 
-        initR();
+        robot.stop();
+
         // *****************************************************************************************
         // Driving Distance
         // *****************************************************************************************
 
         //setting target value
-        double targetInches = 27.5 - 8;
+        double targetInches = 17.5;
+
         pDrivingLeft.setTarget(robot.leftFront.getCurrentPosition() + targetInches * RobotMap.TICKS_PER_INCH);//25 inches
         pDrivingRight.setTarget(robot.rightFront.getCurrentPosition() + targetInches * RobotMap.TICKS_PER_INCH);//25 inches
 
         errorLeft = targetInches* RobotMap.TICKS_PER_INCH - robot.leftFront.getCurrentPosition();
         errorRight = targetInches* RobotMap.TICKS_PER_INCH - robot.rightFront.getCurrentPosition();
-        waitForStart();
 
         //Proportional Loop
         while(opModeIsActive() && errorLeft > RobotMap.DRIVE_TOLERANCE && errorRight > RobotMap.DRIVE_TOLERANCE){
@@ -225,10 +240,17 @@ public class BlueJewelGlyphDriveDistance extends LinearOpMode {
             robot.rightBack.setPower(pRight);
         }
 
+
+
         t.reset();
+        robot.intakeRight.setPower(-1);
+        robot.intakeLeft.setPower(1);
 
         //TODO figure out which orientation
-        while(opModeIsActive()){
+
+        ElapsedTime m = new ElapsedTime();
+        m.startTime();
+        while(opModeIsActive() && m.seconds() < 0.25){
             Logging.log("roll: ", gyro.getRoll(), telemetry);
             Logging.log("pitch: ", gyro.getPitch(), telemetry);
             Logging.log("yaw: ", gyro.getYaw(), telemetry);
@@ -236,14 +258,34 @@ public class BlueJewelGlyphDriveDistance extends LinearOpMode {
             Logging.log("target", target,telemetry);
             Logging.log("Turn Condition", Math.abs(pid.err) >= RobotMap.TURN_TOLERANCE, telemetry);
             telemetry.update();
-            robot.intakeLeft.setPower(1);
-            robot.intakeRight.setPower(1);
             robot.flipper.setPosition(1);
+
+            robot.leftFront.setPower(-1);
+            robot.rightFront.setPower(-1);
+            robot.leftBack.setPower(-1);
+            robot.rightBack.setPower(-1);
         }
 
-        A.reset();
-        while(opModeIsActive() && A.seconds() < 1)
-        robot.setDrivePower(1);
+        robot.stop();
+
+        m.reset();
+
+        while(opModeIsActive() && m.seconds() < 0.25){
+            Logging.log("roll: ", gyro.getRoll(), telemetry);
+            Logging.log("pitch: ", gyro.getPitch(), telemetry);
+            Logging.log("yaw: ", gyro.getYaw(), telemetry);
+            Logging.log("error", pid.err,telemetry);
+            Logging.log("target", target,telemetry);
+            Logging.log("Turn Condition", Math.abs(pid.err) >= RobotMap.TURN_TOLERANCE, telemetry);
+            telemetry.update();
+            robot.flipper.setPosition(1);
+
+            robot.leftFront.setPower(1);
+            robot.rightFront.setPower(1);
+            robot.leftBack.setPower(1);
+            robot.rightBack.setPower(1);
+        }
+
 
     }
 }
