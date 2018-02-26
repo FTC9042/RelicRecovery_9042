@@ -370,20 +370,25 @@ public class RedJewelMultiglyph extends LinearOpMode{
         double initialPosRight = robot.rightFront.getCurrentPosition();
 
         robot.intakeRight.setPower(1);
-        robot.intakeLeft.setPower(-1);
+        robot.intakeLeft.setPower(-.1);
 
         ElapsedTime time1 = new ElapsedTime();
         time1.startTime();
 
-        while(opModeIsActive() && !(sensorDistance.getDistance(DistanceUnit.INCH) < 8) && time1.seconds() < 4){
-            robot.setDrivePower(-.8);
+        while(opModeIsActive() && !(sensorDistance.getDistance(DistanceUnit.INCH) < 8) && time1.seconds() < 3.25){
+            robot.setDrivePower(-.4);
         }
 
         double timeForward = time1.seconds() + 2;
         time1.reset();
 
         while(opModeIsActive() && time1.seconds() < timeForward){
-            robot.setDrivePower(+.8);
+            robot.setDrivePower(+.4);
+        }
+
+        time1.reset();
+        while(opModeIsActive() && time1.seconds() < 0.1){
+            robot.setDrivePower(-1);
         }
 
         robot.stop();

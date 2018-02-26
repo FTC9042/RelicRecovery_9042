@@ -286,6 +286,17 @@ public class BlueJewelGlyphDriveDistance extends LinearOpMode {
             robot.rightBack.setPower(1);
         }
 
+        ElapsedTime time1 = new ElapsedTime();
 
+        time1.startTime();
+        time1.reset();
+        while(opModeIsActive() && time1.seconds() < 0.1){
+            robot.setDrivePower(1);
+        }
+
+        time1.reset();
+        while(opModeIsActive() && time1.seconds() < 0.1){
+            robot.setDrivePower(-1);
+        }
     }
 }

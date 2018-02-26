@@ -274,8 +274,8 @@ public class BlueJewelMultiglyph extends LinearOpMode {
         while(opModeIsActive() && m.seconds() < 0.25){
             Logging.log("roll: ", gyro.getRoll(), telemetry);
             Logging.log("pitch: ", gyro.getPitch(), telemetry);
-            Logging.log("yaw: ", gyro.getYaw(), telemetry);
-            Logging.log("error", pid.err,telemetry);
+            Logging.log("error: ", gyro.getYaw(), telemetry);
+            Logging.log("yaw", pid.err,telemetry);
             Logging.log("target", target,telemetry);
             Logging.log("Turn Condition", Math.abs(pid.err) >= RobotMap.TURN_TOLERANCE, telemetry);
             telemetry.update();
@@ -341,25 +341,40 @@ public class BlueJewelMultiglyph extends LinearOpMode {
         double initialPosRight = robot.rightFront.getCurrentPosition();
 
         robot.intakeRight.setPower(1);
-        robot.intakeLeft.setPower(-1);
+        robot.intakeLeft.setPower(-.1);
 
         ElapsedTime time1 = new ElapsedTime();
         time1.startTime();
 
-        while(opModeIsActive() && !(sensorDistance.getDistance(DistanceUnit.INCH) < 8) && time1.seconds() < 4){
-            robot.setDrivePower(+.8);
+        while(opModeIsActive() && !(sensorDistance.getDistance(DistanceUnit.INCH) < 8) && time1.seconds() < 1.5){
+            robot.setDrivePower(+.4);
         }
 
         double timeForward = time1.seconds() + 2;
         time1.reset();
 
         while(opModeIsActive() && time1.seconds() < timeForward){
-            robot.setDrivePower(-.8);
+            robot.setDrivePower(-.4);
         }
 
-
-        robot.flipper.setPosition(0);
         robot.stop();
+
+        ElapsedTime c = new ElapsedTime();
+        c.startTime();
+        c.reset();
+        robot.intakeRight.setPower(1);
+        robot.intakeLeft.setPower(-1);
+
+        while(opModeIsActive() && c.seconds() < 0.5){
+            robot.setDrivePower(.2);
+        }
+
+        robot.stop();
+
+        c.reset();
+        while(opModeIsActive()){
+            robot.flipper.setPosition(0);
+        }
 
     }
 }
