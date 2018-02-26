@@ -1,11 +1,10 @@
 package org.firstinspires.ftc.teamcode;
 
 import android.graphics.Color;
-
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -21,8 +20,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.Velocity;
  * Created by anikaitsingh on 2/13/18.
  */
 
-@Autonomous(name = "Blue Jewel - Glyph", group = "Auton")
-public class BlueJewelGlyphDriveDistance extends LinearOpMode {
+@Autonomous(name = "Red Jewel - Glyph", group = "Auton")
+public class RedJewelGlyphDriveDistance extends LinearOpMode {
     Robot robot;
     ColorSensor sensorColor;
     double errorLeft, errorRight;
@@ -33,8 +32,7 @@ public class BlueJewelGlyphDriveDistance extends LinearOpMode {
     PID pDrivingLeft = new PID(RobotMap.P_CONSTANT_DRIVING);
     PID pDrivingRight = new PID(RobotMap.P_CONSTANT_DRIVING);
 
-
-    RelicRecoveryVuMark position;
+    RelicRecoveryVuMark position = RelicRecoveryVuMark.UNKNOWN;
 
     private void initR() {
         robot = new Robot(this.hardwareMap);
@@ -50,21 +48,12 @@ public class BlueJewelGlyphDriveDistance extends LinearOpMode {
         robot.intakeLeft = map.dcMotor.get("intakeLeft");
         robot.intakeRight = map.dcMotor.get("intakeRight");
 
-        robot.rightBack.setDirection(DcMotorSimple.Direction.FORWARD);
-        robot.rightFront.setDirection(DcMotorSimple.Direction.FORWARD);
-        robot.leftBack.setDirection(DcMotorSimple.Direction.REVERSE);
-        robot.leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
-        robot.intakeLeft.setDirection(DcMotorSimple.Direction.REVERSE);
-        robot.intakeRight.setDirection(DcMotorSimple.Direction.REVERSE);
-
-        robot.leftBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        robot.rightBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-
-        robot.setDriveMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.setDriveMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
-        hardwareMap.servo.get("holder").setPosition(1);
-
+        robot.rightBack.setDirection(DcMotorSimple.Direction.REVERSE);
+        robot.rightFront.setDirection(DcMotorSimple.Direction.REVERSE);
+        robot.leftBack.setDirection(DcMotorSimple.Direction.FORWARD);
+        robot.leftFront.setDirection(DcMotorSimple.Direction.FORWARD);
+        robot.intakeLeft.setDirection(DcMotorSimple.Direction.FORWARD);
+        robot.intakeRight.setDirection(DcMotorSimple.Direction.FORWARD);
     }
 
     public void runOpMode(){
@@ -154,7 +143,7 @@ public class BlueJewelGlyphDriveDistance extends LinearOpMode {
         // *****************************************************************************************
 
         //setting target value
-        double targetInches = 17.5;
+        double targetInches = 25.5;
 
         pDrivingLeft.setTarget(robot.leftFront.getCurrentPosition() + targetInches * RobotMap.TICKS_PER_INCH);//25 inches
         pDrivingRight.setTarget(robot.rightFront.getCurrentPosition() + targetInches * RobotMap.TICKS_PER_INCH);//25 inches
@@ -197,12 +186,60 @@ public class BlueJewelGlyphDriveDistance extends LinearOpMode {
 
         }
 
+        // *****************************************************************************************
+        // Driving Distance
+        // *****************************************************************************************
+
+        //setting target value
+        double targetTicks = 17.5 * RobotMap.TICKS_PER_INCH;
+
+        pDrivingLeft.setTarget(robot.leftFront.getCurrentPosition() +targetTicks);
+        pDrivingRight.setTarget(robot.rightFront.getCurrentPosition() + targetTicks);
+
+        errorLeft = targetTicks - robot.leftFront.getCurrentPosition();
+        errorRight = targetTicks- robot.rightFront.getCurrentPosition();
+
+        //Proportional Loop
+
+        while(opModeIsActive() && errorLeft > RobotMap.DRIVE_TOLERANCE && errorRight > RobotMap.DRIVE_TOLERANCE){
+            positionLeftAverage = robot.leftFront.getCurrentPosition();
+            positionRightAverage = robot.rightFront.getCurrentPosition();
+
+            errorLeft = targetTicks - robot.leftFront.getCurrentPosition();
+            errorRight = targetTicks * RobotMap.TICKS_PER_INCH - robot.rightFront.getCurrentPosition();
+
+            pDrivingLeft.err = errorLeft;
+            pDrivingRight.err = errorRight;
+
+            telemetry.addData("rightPosition", positionRightAverage);
+            telemetry.addData("Target", targetTicks);
+            telemetry.addData("Front Left Motor Position", robot.leftFront.getCurrentPosition());
+            telemetry.addData("Front Right Motor Position", robot.rightFront.getCurrentPosition());
+            telemetry.addData("Back Left Motor Position", robot.leftBack.getCurrentPosition());
+            telemetry.addData("Back Right Motor Position", robot.rightBack.getCurrentPosition());
+            telemetry.update();
+
+            double left = pDrivingLeft.getValue(positionLeftAverage);
+            double right = pDrivingRight.getValue(positionRightAverage);
+
+            robot.leftFront.setPower(Range.clip(left, -1,1));
+            robot.rightFront.setPower(Range.clip(right, -1,1));
+        }
+
+        robot.stop();
+
+        A = new ElapsedTime();
+        A.startTime();
+        A.reset();
+        while(A.seconds()<2){
+
+        }
 
 
         // *****************************************************************************************
         // Turning
         // *****************************************************************************************
-
+        initR();
         Gyro gyro = new Gyro(hardwareMap);
         imu = gyro.imu;
 
@@ -215,11 +252,11 @@ public class BlueJewelGlyphDriveDistance extends LinearOpMode {
 
         pid.getValue(gyro.getYaw());
 
-        ElapsedTime t = new ElapsedTime();
-        t.startTime();
+        ElapsedTime b = new ElapsedTime();
+        b.startTime();
 
         // Loop and update the dashboard
-        while (opModeIsActive() && Math.abs(pid.err) >= RobotMap.TURN_TOLERANCE && t.seconds() < 3) {
+        while (opModeIsActive() && Math.abs(pid.err) >= RobotMap.TURN_TOLERANCE && b.seconds() < 3) {
             Logging.log("roll: ", gyro.getRoll(), telemetry);
             Logging.log("pitch: ", gyro.getPitch(), telemetry);
             Logging.log("yaw: ", gyro.getYaw(), telemetry);
@@ -227,8 +264,8 @@ public class BlueJewelGlyphDriveDistance extends LinearOpMode {
             Logging.log("target", target, telemetry);
             Logging.log("Turn Condition", Math.abs(pid.err) >= RobotMap.TURN_TOLERANCE, telemetry);
 
-            double pLeft = pid.getValueP(gyro.getYaw());
-            double pRight = -pid.getValueP(gyro.getYaw());
+            double pLeft = -pid.getValueP(gyro.getYaw());
+            double pRight = pid.getValueP(gyro.getYaw());
 
             Logging.log("pLeft", pLeft, telemetry);
             Logging.log("pRight", pLeft, telemetry);
@@ -241,22 +278,21 @@ public class BlueJewelGlyphDriveDistance extends LinearOpMode {
         }
 
 
-
-        t.reset();
-        robot.intakeRight.setPower(-1);
-        robot.intakeLeft.setPower(1);
-
         //TODO figure out which orientation
 
         ElapsedTime m = new ElapsedTime();
         m.startTime();
-        while(opModeIsActive() && m.seconds() < 0.25){
+
+        robot.intakeRight.setPower(1);
+        robot.intakeLeft.setPower(-1);
+
+        while(opModeIsActive() && m.seconds() < 0.20){
             Logging.log("roll: ", gyro.getRoll(), telemetry);
             Logging.log("pitch: ", gyro.getPitch(), telemetry);
             Logging.log("yaw: ", gyro.getYaw(), telemetry);
             Logging.log("error", pid.err,telemetry);
             Logging.log("target", target,telemetry);
-            Logging.log("Turn Condition", Math.abs(pid.err) >= RobotMap.TURN_TOLERANCE, telemetry);
+            Logging.log("Turn Condition", Math.abs(pid.err) >= RobotMap.TURN_TOLERANCE+8, telemetry);
             telemetry.update();
             robot.flipper.setPosition(1);
 
@@ -278,25 +314,8 @@ public class BlueJewelGlyphDriveDistance extends LinearOpMode {
             Logging.log("target", target,telemetry);
             Logging.log("Turn Condition", Math.abs(pid.err) >= RobotMap.TURN_TOLERANCE, telemetry);
             telemetry.update();
-            robot.flipper.setPosition(1);
-
-            robot.leftFront.setPower(1);
-            robot.rightFront.setPower(1);
-            robot.leftBack.setPower(1);
-            robot.rightBack.setPower(1);
         }
 
-        ElapsedTime time1 = new ElapsedTime();
 
-        time1.startTime();
-        time1.reset();
-        while(opModeIsActive() && time1.seconds() < 0.1){
-            robot.setDrivePower(1);
-        }
-
-        time1.reset();
-        while(opModeIsActive() && time1.seconds() < 0.1){
-            robot.setDrivePower(-1);
-        }
     }
 }

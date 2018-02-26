@@ -47,15 +47,31 @@ public class Tele extends OpMode{
     public void loop(){
         robot.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        robot.setDrivePower(gamepad1.left_stick_y, gamepad1.right_stick_y);
+        if(gamepad1.left_trigger > 0.5 && gamepad1.right_trigger > 0.5)
+            robot.smoothDrive(0.3*gamepad1.left_stick_y, 0.3*gamepad2.right_stick_y);
+        else if (gamepad1.left_trigger>0.5)
+            robot.setDrivePower(0.3* gamepad1.left_stick_y, 0.3* gamepad1.right_stick_y);
+        else if (gamepad1.right_trigger>0.5)
+            robot.smoothDrive(gamepad1.left_stick_y, gamepad2.right_stick_y);
+        else
+            robot.setDrivePower(gamepad1.left_stick_y, gamepad1.right_stick_y);
+
+        if(gamepad1.left_bumper){
+            hardwareMap.servo.get("holder").setPosition(1);
+        }
+
+        if(gamepad1.right_bumper){
+            hardwareMap.servo.get("holder").setPosition(0);
+        }
+
 
         robot.smoothIntake(gamepad2.left_stick_y, gamepad2.right_stick_y);
 
-        if (gamepad2.dpad_up) {
+        if (gamepad2.dpad_left) {
             robot.jewel.setPosition(0.9);
         }
 
-        if (gamepad2.dpad_down) {
+        if (gamepad2.dpad_right) {
             robot.jewel.setPosition(0);
         }
 
@@ -70,22 +86,21 @@ public class Tele extends OpMode{
         }
 
         if(gamepad2.right_bumper){
-            robot.arm.setPosition(0.33);
+            robot.arm.setPosition(0.45);
         }
 
         if(gamepad2.left_bumper){
             robot.arm.setPosition(1);
         }
 
-        if(gamepad2.right_trigger > 0.5)
+        if(gamepad2.dpad_down)
             robot.relic.setPower(-1);
-        else if(gamepad2.left_trigger> 0.5)
+        else if(gamepad2.dpad_up)
             robot.relic.setPower(1);
         else
             robot.relic.setPower(0);
 
-        robot.claw.setPosition(1-gamepad2.right_trigger);
-
+        robot.claw.setPosition(gamepad2.right_trigger);
 
     }
 

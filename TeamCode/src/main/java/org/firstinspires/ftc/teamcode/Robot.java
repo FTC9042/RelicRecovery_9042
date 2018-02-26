@@ -63,6 +63,11 @@ public class Robot {
         rightBack.setMode(mode);
     }
 
+    public void setTargetPos(int left, int right) {
+        leftFront.setTargetPosition(left);
+        rightFront.setTargetPosition(right);
+    }
+
     public void setZeroPowerBehavior(DcMotor.ZeroPowerBehavior behav) {
         leftFront.setZeroPowerBehavior(behav);
         leftBack.setZeroPowerBehavior(behav);
@@ -99,7 +104,10 @@ public class Robot {
         left = oldLeftSpeed;
         right = oldRightSpeed;
 
-        setDrivePower(left, right);
+        leftFront.setPower(left);
+        rightFront.setPower(right);
+        leftBack.setPower(left);
+        rightBack.setPower(right);
     }
 
     public void smoothIntake(double speedLeft, double speedRight) {

@@ -5,6 +5,7 @@ import android.graphics.Color;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -163,7 +164,6 @@ public class RedJewelGlyph extends LinearOpMode {
         t.reset();
         while (opModeIsActive() && t.seconds() < 0.4) {
             robot.setDrivePower(1);
-            robot.smoothIntake(-0.3, -0.3);
             robot.flipper.setPosition(1);
         }
         robot.setDrivePower(0);

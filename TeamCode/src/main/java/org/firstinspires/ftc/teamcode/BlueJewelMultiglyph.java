@@ -5,14 +5,15 @@ import android.graphics.Color;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 import org.firstinspires.ftc.robotcore.external.navigation.Velocity;
@@ -21,8 +22,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.Velocity;
  * Created by anikaitsingh on 2/13/18.
  */
 
-@Autonomous(name = "Blue Jewel - Glyph", group = "Auton")
-public class BlueJewelGlyphDriveDistance extends LinearOpMode {
+@Autonomous(name = "Blue Jewel - Multi-Glyph", group = "Auton")
+public class BlueJewelMultiglyph extends LinearOpMode {
     Robot robot;
     ColorSensor sensorColor;
     double errorLeft, errorRight;
@@ -273,8 +274,8 @@ public class BlueJewelGlyphDriveDistance extends LinearOpMode {
         while(opModeIsActive() && m.seconds() < 0.25){
             Logging.log("roll: ", gyro.getRoll(), telemetry);
             Logging.log("pitch: ", gyro.getPitch(), telemetry);
-            Logging.log("yaw: ", gyro.getYaw(), telemetry);
-            Logging.log("error", pid.err,telemetry);
+            Logging.log("error: ", gyro.getYaw(), telemetry);
+            Logging.log("yaw", pid.err,telemetry);
             Logging.log("target", target,telemetry);
             Logging.log("Turn Condition", Math.abs(pid.err) >= RobotMap.TURN_TOLERANCE, telemetry);
             telemetry.update();
@@ -286,17 +287,94 @@ public class BlueJewelGlyphDriveDistance extends LinearOpMode {
             robot.rightBack.setPower(1);
         }
 
+        robot.stop();
+
+
+        // *****************************************************************************************
+        // Turning Back 180 degrees
+        // *****************************************************************************************
+
+        gyro = new Gyro(hardwareMap);
+        imu = gyro.imu;
+
+        imu.startAccelerationIntegration(new Position(), new Velocity(), 1000);
+
+        pid = new PID(RobotMap.P_TURN);
+        target = gyro.getYaw() - 80;//heading
+
+        pid.setTarget(target);
+
+        pid.getValue(gyro.getYaw());
+
+        t = new ElapsedTime();
+        t.startTime();
+
+        // Loop and update the dashboard
+        while (opModeIsActive() && Math.abs(pid.err) >= RobotMap.TURN_TOLERANCE && t.seconds() < 3) {
+            Logging.log("roll: ", gyro.getRoll(), telemetry);
+            Logging.log("pitch: ", gyro.getPitch(), telemetry);
+            Logging.log("yaw: ", gyro.getYaw(), telemetry);
+            Logging.log("error", pid.err, telemetry);
+            Logging.log("target", target, telemetry);
+            Logging.log("Turn Condition", Math.abs(pid.err) >= RobotMap.TURN_TOLERANCE, telemetry);
+
+            double pLeft = -pid.getValueP(gyro.getYaw());
+            double pRight = +pid.getValueP(gyro.getYaw());
+
+            Logging.log("pLeft", pLeft, telemetry);
+            Logging.log("pRight", pLeft, telemetry);
+            telemetry.update();
+
+            robot.leftFront.setPower(pLeft);
+            robot.rightFront.setPower(pRight);
+            robot.leftBack.setPower(pLeft);
+            robot.rightBack.setPower(pRight);
+        }
+
+
+        robot.stop();
+
+        DistanceSensor sensorDistance = hardwareMap.get(DistanceSensor.class, "multi");
+        sensorDistance.getDistance(DistanceUnit.INCH);
+
+        double initialPosLeft = robot.leftFront.getCurrentPosition();
+        double initialPosRight = robot.rightFront.getCurrentPosition();
+
+        robot.intakeRight.setPower(1);
+        robot.intakeLeft.setPower(-.1);
+
         ElapsedTime time1 = new ElapsedTime();
-
         time1.startTime();
-        time1.reset();
-        while(opModeIsActive() && time1.seconds() < 0.1){
-            robot.setDrivePower(1);
+
+        while(opModeIsActive() && !(sensorDistance.getDistance(DistanceUnit.INCH) < 8) && time1.seconds() < 1.5){
+            robot.setDrivePower(+.4);
         }
 
+        double timeForward = time1.seconds() + 2;
         time1.reset();
-        while(opModeIsActive() && time1.seconds() < 0.1){
-            robot.setDrivePower(-1);
+
+        while(opModeIsActive() && time1.seconds() < timeForward){
+            robot.setDrivePower(-.4);
         }
+
+        robot.stop();
+
+        ElapsedTime c = new ElapsedTime();
+        c.startTime();
+        c.reset();
+        robot.intakeRight.setPower(1);
+        robot.intakeLeft.setPower(-1);
+
+        while(opModeIsActive() && c.seconds() < 0.5){
+            robot.setDrivePower(.2);
+        }
+
+        robot.stop();
+
+        c.reset();
+        while(opModeIsActive()){
+            robot.flipper.setPosition(0);
+        }
+
     }
 }
